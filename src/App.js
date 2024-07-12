@@ -29,7 +29,7 @@ function App() {
       const data = await response.json();
       return data.articles;
     } catch (error) {
-      console.error(error);
+      console.error('Error fetching random news:', error.message);
       return [];
     }
   }
@@ -51,7 +51,7 @@ function App() {
         return [];
       }
     } catch (error) {
-      console.error(error);
+      console.error('Error querying news:', error.message);
       return [];
     }
   }
