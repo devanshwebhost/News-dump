@@ -1,19 +1,18 @@
-
 import './App.css';
 import React, { useEffect } from 'react';
 
- function App() {
-  let apiKey = "5b59351e6d6d4d92a84f154692c9e4a6";
-  async function rendomNews(){
-    try{
-  const Url = `https://newsapi.org/v2/top-headlines?country=us&category=business&apiKey=${apiKey}`
-  const response = await fetch(Url);
-  const data = await response.json();
-  console.log(data)
-  return data.articles;
-    }catch(error){
-      console.log("error")
-      return[];
+function App() {
+  const apiKey = process.env.REACT_APP_NEWS_API_KEY; // Use environment variable
+
+  async function rendomNews() {
+    try {
+      const Url = `https://newsapi.org/v2/top-headlines?country=us&category=business&apiKey=${apiKey}`;
+      const response = await fetch(Url);
+      const data = await response.json();
+      return data.articles;
+    } catch (error) {
+      console.log("error");
+      return [];
     }
   }
 
@@ -37,8 +36,8 @@ import React, { useEffect } from 'react';
     }
   }
 
-    
   function articleTitle(str, maxLength) {
+    if (!str) return '';
     if (str.length > maxLength) {
       return str.substring(0, maxLength) + '...';
     }
@@ -46,88 +45,93 @@ import React, { useEffect } from 'react';
   }
 
   function articlePera(str, maxLength) {
+    if (!str) return '';
     if (str.length > maxLength) {
       return str.substring(0, maxLength) + '...';
     }
     return str;
   }
-  
-  function displayBlogs(articles){
+
+  function displayBlogs(articles) {
     const blogContainer = document.querySelector(".blogContainer");
     blogContainer.innerHTML = "";
-    articles.forEach((articles) =>{
+    articles.forEach((article) => {
+      if (article.urlToImage) {
+        const aTag = document.createElement("a");
+        aTag.href = article.url;
+        aTag.target = "_blank";
+        aTag.classList.add("aTag");
 
-  if (!articles.urlToImage == "") {
-    const aTag = document.createElement("a")
-    aTag.href = articles.url;
-    aTag.target = "_blank";
-    aTag.classList.add("aTag");
         const blogCard = document.createElement("div");
         blogCard.classList.add("card");
+
         const img = document.createElement("img");
-        img.src = articles.urlToImage;
-        img.alt = "The images is not founded......";
+        img.src = article.urlToImage;
+        img.alt = "Image not found";
+
         const title = document.createElement("h2");
-        title.innerText = articleTitle(articles.title, 50);
+        title.innerText = articleTitle(article.title, 50);
+
         const description = document.createElement("p");
-        description.innerText = articlePera(articles.description, 200);
-    
-    aTag.appendChild(img);
-    aTag.appendChild(title);
-    aTag.appendChild(description);
-    blogCard.appendChild(aTag);
-    blogContainer.appendChild(blogCard);
+        description.innerText = articlePera(article.description, 200);
+
+        aTag.appendChild(img);
+        aTag.appendChild(title);
+        aTag.appendChild(description);
+        blogCard.appendChild(aTag);
+        blogContainer.appendChild(blogCard);
+      }
+    });
   }
-    })
-  }
-  useEffect(() =>{
+
+  useEffect(() => {
     const searchInput = document.getElementById("search-input");
     const searchButton = document.getElementById("search-button");
-  
-    const handlesearch =async() =>{
+
+    const handleSearch = async () => {
       const query = searchInput.value;
       if (query !== "") {
         const articles = await queryNews(query);
         displayBlogs(articles);
       } else {
-        console.error("Error to receive query")
+        console.error("Error to receive query");
       }
     };
-    searchButton.addEventListener('click', handlesearch);
-  
-  (async () => {
-    try{
-     const articles = await rendomNews();
-     displayBlogs(articles);
-    } catch (error){
-        console.error("Error fetching random news")
+    searchButton.addEventListener('click', handleSearch);
+
+    (async () => {
+      try {
+        const articles = await rendomNews();
+        displayBlogs(articles);
+      } catch (error) {
+        console.error("Error fetching random news");
       }
     })();
-    return ()=>{
-      searchButton.removeEventListener('click', handlesearch);
-    }
-  },[]);
+
+    return () => {
+      searchButton.removeEventListener('click', handleSearch);
+    };
+  }, []);
 
   return (
     <div className='main'>
-    <nav>
-      <div className='navbar'>
-        <div className='logo'>
-          <a href='#index.html'>News Dump</a>
+      <nav>
+        <div className='navbar'>
+          <div className='logo'>
+            <a href='#index.html'>News Dump</a>
+          </div>
+          <div className='search-area'>
+            <input type='text' id='search-input' placeholder='Search the news...' />
+            <button id='search-button'>Search</button>
+          </div>
         </div>
-        <div className='search-area'>
-          <input type='text' id='search-input' placeholder='Search the news...'/>
-          <button id='search-button'>Search</button>
-        </div>
-      </div>
-      <h1 id='updateText'>Browse The Latest News...</h1>
-    </nav>
-    <main>
-     <div className='blogContainer'></div>
-    </main>
+        <h1 id='updateText'>Browse The Latest News...</h1>
+      </nav>
+      <main>
+        <div className='blogContainer'></div>
+      </main>
     </div>
-    
-    );
+  );
 }
 
 export default App;
